@@ -1,12 +1,13 @@
 import pygame
 from pygame import Surface
 from pygame.math import Vector2
+from pandas import DataFrame
 
 class Quiz:
     left_image: Surface
     right_image: Surface
     chapter: int
-    answers: list[Vector2]
+    answers: DataFrame
 
     # 위치, 크기 정보
     scale_ratio: float
@@ -17,8 +18,8 @@ class Quiz:
             self, 
             left_image: Surface, 
             right_image: Surface, 
-            chapter: int, 
-            answers: list[Vector2],
+            chapter: int,
+            answers: DataFrame,
             scale_ratio: float,
             left_top: Vector2
         ):
@@ -39,9 +40,12 @@ class Quiz:
         # 오른쪽 이미지 띄우기 (죄측 상단 + 이미지 가로 길이)
         screen.blit(self.right_image, self.left_top + Vector2(self.left_image.get_width(), 0))
 
-    def draw_answer(self, screen: Surface):
-        for answer in self.answers:
+    def draw_answer(self, screen: Surface, level: int):
+        current_level_answer = self.answers[self.answers['level'] == level]
+
+        for row in current_level_answer[["x_pos", "y_pos"]].itertuples(index=False):
+            answer_pos = Vector2(row.x_pos, row.y_pos)
             # 정답 위치 원 그리기 (좌측 상단 + 정답 좌표)
-            pygame.draw.circle(screen, (255, 0, 0), self.left_top + answer * self.scale_ratio, 10)
+            pygame.draw.circle(screen, (255, 0, 0), self.left_top + answer_pos * self.scale_ratio, 10)
             # 정답 위치 원 그리기 (좌측 상단 + 이미지 가로 길이 + 정답 좌표)
-            pygame.draw.circle(screen, (255, 0, 0), self.left_top + Vector2(self.left_image.get_width(), 0) + answer * self.scale_ratio, 10)
+            pygame.draw.circle(screen, (255, 0, 0), self.left_top + Vector2(self.left_image.get_width(), 0) + answer_pos * self.scale_ratio, 10)
