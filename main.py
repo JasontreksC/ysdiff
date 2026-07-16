@@ -1,6 +1,7 @@
 import pygame, csv
 from pygame import Surface, Vector2
 from quiz import Quiz
+from PIL import Image, ImageOps
 
 # 초기화
 pygame.init()
@@ -39,23 +40,29 @@ def main():
             answers[int(row[0])].append(Vector2(int(row[1]), int(row[2])))
 
     for i in range(1, image_count + 1):
+        # 왼쪽 이미지 불러오기
+        left_image = Image.open(f"images/ysu{i}_L.jpg")
+        left_image = ImageOps.exif_transpose(left_image)
+        # 오른쪽 이미지 불러오기
+        right_image = Image.open(f"images/ysu{i}_R.jpg")
+        right_image = ImageOps.exif_transpose(right_image)
         # i번 이미지 불러오기 (왼쪽, 오른쪽)
-        left_image = pygame.image.load(f"images/ysu{i}_L.jpg")
-        right_image = pygame.image.load(f"images/ysu{i}_R.jpg")
+        left_surface = pygame.image.frombytes(left_image.tobytes(), left_image.size, left_image.mode)
+        right_surface = pygame.image.frombytes(right_image.tobytes(), right_image.size, right_image.mode)
         # 크기 비율 구하기
-        w, h = left_image.get_size()
+        w, h = left_surface.get_size()
         scale_ratio = (screen_width / 2) / w
         # 크기 조절
-        scaled_left_image = pygame.transform.scale(left_image, (w * scale_ratio, h * scale_ratio))
-        scaled_right_image = pygame.transform.scale(right_image, (w * scale_ratio, h * scale_ratio))
+        scaled_left_surface = pygame.transform.scale(left_surface, (w * scale_ratio, h * scale_ratio))
+        scaled_right_surface = pygame.transform.scale(right_surface, (w * scale_ratio, h * scale_ratio))
         # 크기 조절된 이미지를 리스트에 저장
         new_quiz = Quiz(
-            scaled_left_image,
-            scaled_right_image,
+            scaled_left_surface,
+            scaled_right_surface,
             i,
             answers[i],
             scale_ratio,
-            Vector2(0, screen_height / 2 - scaled_left_image.get_height() / 2)
+            Vector2(0, screen_height / 2 - scaled_left_surface.get_height() / 2)
         )
         quiz_list.append(new_quiz)
 
