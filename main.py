@@ -1,7 +1,6 @@
 import pygame, csv
 from pygame import Surface, Vector2
 from quiz import Quiz
-from PIL import Image, ImageOps
 import pandas as pd
 
 # 초기화
@@ -81,15 +80,13 @@ def main():
                 # 좌클릭 이벤트인 경우
                 if event.button == 1: # 좌클릭
                     # 여기서 current_quiz 의 정답 처리 메소드 호출!
-                    pass
+                    current_quiz.check_answer(Vector2(x, y), level_selected)
 
         ## 배경 화면 채우기
         screen.fill((30, 30, 30))
 
         # 퀴즈 출력
         current_quiz.draw(screen, screen_height)
-
-        current_quiz.draw_answer(screen, 0)
 
         # 키 입력받기
         keys = pygame.key.get_pressed()
