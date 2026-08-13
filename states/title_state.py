@@ -3,6 +3,8 @@ from pygame import Surface
 
 from managers.ui import ui_manager, check_quit
 
+from managers.resource import select_level
+
 test_button = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((0, 0),(200, 100)),
     text='테스트 버튼',
