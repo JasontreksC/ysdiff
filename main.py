@@ -2,7 +2,7 @@ import pygame, pygame_gui
 from pygame import Surface, Vector2
 from quiz import Quiz
 import pandas as pd
-from managers.resource import generate_quiz
+from managers.resource import resource_manager
 
 
 # 초기화
@@ -23,16 +23,13 @@ screen = pygame.display.set_mode(
 
 from states.title_state import run_title_state
 from states.ingame_state import run_ingame_state
-
+from states.end_state import run_end_state
 def main():
     running = True
     chapter_count = 10
 
-    # 공장 가동
-    generate_quiz(chapter_count)
-    
-    # 여기서 레벨 선택
-    level_selected = 0 # 하:0, 중:1, 상:2
+    # 퀴즈 공장 가동
+    resource_manager.generate_quiz(chapter_count)
 
     # 처음에는 타이틀 화면
     game_state = 'title'
@@ -50,8 +47,7 @@ def main():
                 game_state = run_ingame_state(deltaTime, screen)
             # 게임 종료 화면일 때
             case 'end':
-            
-                pass
+                game_state = run_end_state(deltaTime, screen)
 
         # 렌더링(화면 출력)
         pygame.display.flip()

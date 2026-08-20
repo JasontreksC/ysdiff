@@ -9,15 +9,16 @@ from managers.ui import check_quit
 
 from quiz import Quiz
 
-from managers.resource import quiz_list, level_selected, next_chapter
+from managers.resource import resource_manager
 
 def run_ingame_state(dt: float, screen: Surface) -> str:
 
-    from managers.resource import current_chapter
-
     next_state = 'ingame'
-    current_quiz = quiz_list[current_chapter - 1]
-
+    # Quiz 객체, 선택된 난이도, 현재 챕터 정보를 ResourceManager라는 주인에게 받아옴
+    current_quiz = resource_manager.get_current_quiz()
+    level_selected = resource_manager.get_selected_level()
+    current_chapter = resource_manager.get_current_chapter()
+    
     # 이벤트 처리 (한번만 실행해야 하는 코드)
     for event in pygame.event.get():
         # UI매니저가 버튼 클릭 시 발생하는 모든 이벤트들을 가져와서 적용
@@ -33,7 +34,7 @@ def run_ingame_state(dt: float, screen: Surface) -> str:
     screen.fill((221, 189, 213))
 
 
-    current_quiz.draw(screen=screen, screen_height=screen.height, difficult=level_selected)
+    current_quiz.draw(screen, level_selected)
     #    난이도 정답갯수
     # 하    0    3      현재 퀴즈 정답 갯수 >= 3 - 0
     # 중    1    2                         3 - 1
@@ -42,11 +43,12 @@ def run_ingame_state(dt: float, screen: Surface) -> str:
     print(f"지금까지 맞힌 정답 갯수: {len(current_quiz.found_indices)}")
     print(f"현재 챕터 번호: {current_chapter}")
 
+    # 정답을 다 맞췄을 때 -> 마지막 챕터인지
     if len(current_quiz.found_indices) >= 3 - level_selected:
-        next_chapter()
-
-
-
-
+        # 마지막 챕터라면 -> 다음 게임 상태를 "end"로
+        if current_chapter >= 10:
+            next_state = 'end'
+        else:
+            resource_manager.next_chapter()
 
     return next_state

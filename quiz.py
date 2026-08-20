@@ -13,8 +13,12 @@ class Quiz:
     found_indices: set  # 맞춘 정답의 DataFrame 인덱스
 
     # 위치, 크기 정보
+    fixed_scale: Vector2
     scale_ratio: float
-    left_top: Vector2
+    left_left_top: Vector2
+    right_left_top: Vector2
+
+    CENTER_GAP_RATIO = 0.01
 
     # 생성자 메소드
     def __init__(
@@ -24,7 +28,7 @@ class Quiz:
             chapter: int,
             answers: DataFrame,
             scale_ratio: float,
-            left_top: Vector2
+            fixed_scale: Vector2,
         ):
         # 원본 이미지 1개 + 수정된 이미지 3개 저장
         self.original_image = original_image
@@ -35,8 +39,17 @@ class Quiz:
 
         # 크기 비율 저장
         self.scale_ratio = scale_ratio
-        # 왼쪽 이미지가 그려질 위치
-        self.left_top = left_top
+        self.fixed_scale = fixed_scale
+
+        # 이미지가 그려질 위치 계산
+        screen_info = pygame.display.Info()
+        center_gap = screen_info.current_w * self.CENTER_GAP_RATIO
+        ll = (screen_info.current_w - center_gap) / 2 - self.fixed_scale[0]
+        rl = (screen_info.current_w + center_gap) / 2
+        top = (screen_info.current_h - self.fixed_scale[1]) / 2
+
+        self.left_left_top = Vector2(ll, top)
+        self.right_left_top = Vector2(rl, top)
 
         # 맞춘 정답 인덱스 집합 초기화
         self.found_indices = set()
@@ -46,7 +59,7 @@ class Quiz:
         # 기본 허용 범위 반경을 10픽셀로
         # 반경이 겹치면 가까운걸 우선으로
         # 반경 내 정답들을 거리와 함께 삽입 후 거리순 정렬, 맨앞 하나를 pop
-        RADIUS = 10
+        RADIUS = 20
         current_level_answer = self.answers[self.answers['level'] == level]
 
         candidates = []
@@ -54,8 +67,8 @@ class Quiz:
             if idx in self.found_indices:
                 continue
             answer_pos = Vector2(row['x_pos'], row['y_pos'])
-            screen_pos_left = self.left_top + answer_pos * self.scale_ratio
-            screen_pos_right = self.left_top + Vector2(self.original_image.get_width(), 0) + answer_pos * self.scale_ratio
+            screen_pos_left = self.left_left_top + answer_pos * self.scale_ratio
+            screen_pos_right = self.right_left_top + answer_pos * self.scale_ratio
 
             dist = min(click_pos.distance_to(screen_pos_left), click_pos.distance_to(screen_pos_right))
             if dist <= RADIUS:
@@ -66,17 +79,19 @@ class Quiz:
             _, closest_idx = candidates[0]
             self.found_indices.add(closest_idx)
 
-    def draw(self, screen: Surface, screen_height: int, difficult: int):
-        # 왼쪽 이미지 띄우기 (좌측 상단)
-        screen.blit(self.original_image, self.left_top)
-        # 오른쪽 이미지 띄우기 (죄측 상단 + 이미지 가로 길이)
-        screen.blit(self.modified_image[difficult], self.left_top + Vector2(self.original_image.get_width(), 0))
+    def draw(self, screen: Surface, level: int):
+        # 이미지 그리기
+        screen.blit(self.original_image, self.left_left_top)
+        screen.blit(self.modified_image[level], self.right_left_top)
 
         # 맞춘 정답이 있는 경우 해당 위치에 원 그리기
         for idx in self.found_indices:
             row = self.answers.loc[idx]
             answer_pos = Vector2(row['x_pos'], row['y_pos'])
             # 정답 위치 원 그리기 (좌측 상단 + 정답 좌표)
-            pygame.draw.circle(screen, (0, 255, 0), self.left_top + answer_pos * self.scale_ratio, 10)
+            pygame.draw.circle(screen, (0, 255, 0), self.left_left_top + answer_pos * self.scale_ratio, 10)
             # 정답 위치 원 그리기 (좌측 상단 + 이미지 가로 길이 + 정답 좌표)
-            pygame.draw.circle(screen, (0, 255, 0), self.left_top + Vector2(self.original_image.get_width(), 0) + answer_pos * self.scale_ratio, 10)
+            pygame.draw.circle(screen, (0, 255, 0), self.right_left_top + Vector2(self.original_image.get_width(), 0) + answer_pos * self.scale_ratio, 10)
+
+    def flush(self):
+        self.found_indices.clear()
