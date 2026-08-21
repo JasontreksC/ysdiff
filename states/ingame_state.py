@@ -2,12 +2,10 @@
 # 실제 게임 로직
 # 우리가 밖에다 놨던 이미지 띄우기, 클릭시 정답 처리 등등을 여기서
 
-import pygame, pygame_gui
+import pygame
 from pygame import Surface, Vector2
 
-from managers.ui import check_quit
-
-from quiz import Quiz
+from managers.ui import ui_manager, check_quit
 
 from managers.resource import resource_manager
 
@@ -28,6 +26,7 @@ def run_ingame_state(dt: float, screen: Surface) -> str:
             next_state = 'quit'
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
+            resource_manager.reload_answers()
             current_quiz.check_answer(Vector2(event.pos), level_selected)
 
 
@@ -40,14 +39,12 @@ def run_ingame_state(dt: float, screen: Surface) -> str:
     # 중    1    2                         3 - 1
     # 상    2    1                         3 - 2
 
-    print(f"지금까지 맞힌 정답 갯수: {len(current_quiz.found_indices)}")
-    print(f"현재 챕터 번호: {current_chapter}")
-
     # 정답을 다 맞췄을 때 -> 마지막 챕터인지
     if len(current_quiz.found_indices) >= 3 - level_selected:
         # 마지막 챕터라면 -> 다음 게임 상태를 "end"로
         if current_chapter >= 10:
             next_state = 'end'
+            ui_manager.show_ui_pool('end')
         else:
             resource_manager.next_chapter()
 

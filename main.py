@@ -2,11 +2,15 @@ import pygame, pygame_gui
 from pygame import Surface, Vector2
 from quiz import Quiz
 import pandas as pd
-from managers.resource import resource_manager
 
-
-# 초기화
+# 파이게임 초기화
 pygame.init()
+
+# 매니저 생성
+from managers.resource import resource_manager
+from managers.ui import ui_manager
+
+
 # 시간 측정기
 clock = pygame.time.Clock()
 # 화면 정보 가져오기
@@ -16,9 +20,8 @@ screen_height = screen_info.current_h
 # 게임 화면 설정
 screen = pygame.display.set_mode(
     (screen_width, screen_height), 
-    pygame.FULLSCREEN | pygame.SCALED, 
+    pygame.FULLSCREEN, 
     vsync=1
-
 )
 
 from states.title_state import run_title_state
@@ -33,6 +36,7 @@ def main():
 
     # 처음에는 타이틀 화면
     game_state = 'title'
+    ui_manager.show_ui_pool('title')
 
     while game_state != 'quit':
         deltaTime = clock.tick() / 1000.0
@@ -49,6 +53,9 @@ def main():
             case 'end':
                 game_state = run_end_state(deltaTime, screen)
 
+        # UI 출력
+        ui_manager.update(deltaTime)
+        ui_manager.draw_ui(screen)
         # 렌더링(화면 출력)
         pygame.display.flip()
 
