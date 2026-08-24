@@ -26,8 +26,11 @@ def run_ingame_state(dt: float, screen: Surface) -> str:
             next_state = 'quit'
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            resource_manager.reload_answers()
-            current_quiz.check_answer(Vector2(event.pos), level_selected)
+            mx, my = event.pos
+            ww, wh = pygame.display.get_window_size()
+            sw, sh = screen.get_size()
+            click = Vector2(mx * sw / ww, my * sh / wh)
+            current_quiz.check_answer(click, level_selected)
 
 
     screen.fill((221, 189, 213))
