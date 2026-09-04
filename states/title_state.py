@@ -44,7 +44,7 @@ ui_manager.regist_ui('title', game_title, game_subtitle, start_button, level_but
 
 def run_title_state(dt: float, screen: Surface) -> str:
     # 선택된 레벨 가져오기
-    level = ['하', '중', '상']
+    level = ['하 (정답 3개, 개당 1점)', '중 (정답 2개 개당 3점)', '상 (정답 1개, 개당 10점)']
     level_button.set_text(f'난이도: {level[resource_manager.get_selected_level()]}')
 
     next_state = 'title'
@@ -65,6 +65,7 @@ def run_title_state(dt: float, screen: Surface) -> str:
                 next_state = 'ingame'
                 resource_manager.start_chapter()
                 ui_manager.hide_ui_pool('title')
+                ui_manager.show_ui_pool('ingame')
 
             # Level 버튼 클릭시 난이도 변경
             if event.ui_element == level_button:

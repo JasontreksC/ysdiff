@@ -2,12 +2,30 @@
 # 실제 게임 로직
 # 우리가 밖에다 놨던 이미지 띄우기, 클릭시 정답 처리 등등을 여기서
 
-import pygame
+import pygame, pygame_gui
 from pygame import Surface, Vector2
-
 from managers.ui import ui_manager, check_quit
-
 from managers.resource import resource_manager
+
+chapter_label = pygame_gui.elements.UILabel(
+    relative_rect=pygame.Rect((0, -460),(1000, 150)),
+    text='현재 챕터: 1/10 | 맞춘 정답 수: 0/3',
+    manager=ui_manager,
+    visible=False,
+    anchors={'center':'center'},
+    object_id='#subtitle'
+)
+
+to_next_label = pygame_gui.elements.UILabel(
+    relative_rect=pygame.Rect((0, 460),(1000, 150)),
+    text='다음으로 넘어가기: 스페이스 바 | 게임 끝내기: 백 스페이스',
+    manager=ui_manager,
+    visible=False,
+    anchors={'center':'center'},
+    object_id='#subtitle'
+)
+
+ui_manager.regist_ui('ingame', chapter_label, to_next_label)
 
 def run_ingame_state(dt: float, screen: Surface) -> str:
 
@@ -16,6 +34,10 @@ def run_ingame_state(dt: float, screen: Surface) -> str:
     current_quiz = resource_manager.get_current_quiz()
     level_selected = resource_manager.get_selected_level()
     current_chapter = resource_manager.get_current_chapter()
+
+    # 맞춘 정답 개수 조회
+    total_count = 3 - level_selected
+    found_count = len(current_quiz.found_indices)
     
     # 이벤트 처리 (한번만 실행해야 하는 코드)
     for event in pygame.event.get():
@@ -32,6 +54,16 @@ def run_ingame_state(dt: float, screen: Surface) -> str:
             click = Vector2(mx * sw / ww, my * sh / wh)
             current_quiz.check_answer(click, level_selected)
 
+        # 스파이바 누르면 다음 챕터
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                resource_manager.next_chapter()
+            elif event.key == pygame.K_BACKSPACE:
+                next_state = 'end'
+                ui_manager.hide_ui_pool('ingame')
+                ui_manager.show_ui_pool('end')
+
+    chapter_label.set_text(f'현재 챕터: {resource_manager.current_chapter}/10 | 맞춘 정답 수: {found_count}/{total_count}')
 
     screen.fill((221, 189, 213))
 
@@ -42,13 +74,11 @@ def run_ingame_state(dt: float, screen: Surface) -> str:
     # 중    1    2                         3 - 1
     # 상    2    1                         3 - 2
 
-    # 정답을 다 맞췄을 때 -> 마지막 챕터인지
-    if len(current_quiz.found_indices) >= 3 - level_selected:
+    if found_count >= total_count:
         # 마지막 챕터라면 -> 다음 게임 상태를 "end"로
         if current_chapter >= 10:
             next_state = 'end'
+            ui_manager.hide_ui_pool('ingame')
             ui_manager.show_ui_pool('end')
-        else:
-            resource_manager.next_chapter()
 
     return next_state
