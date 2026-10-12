@@ -55,7 +55,7 @@ class Quiz:
         self.found_indices = set()
 
     # 정답 판정 메소드 (좌표 클릭 시 호출)
-    def check_answer(self, click_pos: Vector2, level: int):
+    def check_answer(self, click_pos: Vector2, level: int) -> bool:
         # 기본 허용 범위 반경을 10픽셀로
         # 반경이 겹치면 가까운걸 우선으로
         # 반경 내 정답들을 거리와 함께 삽입 후 거리순 정렬, 맨앞 하나를 pop
@@ -78,7 +78,10 @@ class Quiz:
             candidates.sort(key=lambda x: x[0])
             _, closest_idx = candidates[0]
             self.found_indices.add(closest_idx)
-
+            return True
+        
+        return False
+    
     def draw(self, screen: Surface, level: int):
         # 이미지 그리기
         screen.blit(self.original_image, self.left_left_top)
@@ -89,16 +92,18 @@ class Quiz:
             row = self.answers.loc[idx]
             answer_pos = Vector2(row['x_pos'], row['y_pos'])
             # 정답 위치 원 그리기 (좌측 상단 + 정답 좌표)
-            pygame.draw.circle(screen, (0, 255, 0), self.left_left_top + answer_pos * self.scale_ratio, 10)
-            # 정답 위치 원 그리기 (좌측 상단 + 이미지 가로 길이 + 정답 좌표)
-            pygame.draw.circle(screen, (0, 255, 0), self.right_left_top + answer_pos * self.scale_ratio, 10)
-
-        current_level_answer = self.answers[self.answers['level'] == level]
-
-        for idx, row in current_level_answer[["x_pos", "y_pos", "radious"]].iterrows():
-            answer_pos = Vector2(row['x_pos'], row['y_pos'])
             pygame.draw.circle(screen, (0, 255, 0), self.left_left_top + answer_pos * self.scale_ratio, row['radious'], width=2)
+            # pygame.draw.circle(screen, (0, 255, 0), self.left_left_top + answer_pos * self.scale_ratio, 10)
+            # 정답 위치 원 그리기 (좌측 상단 + 이미지 가로 길이 + 정답 좌표)
             pygame.draw.circle(screen, (0, 255, 0), self.right_left_top + answer_pos * self.scale_ratio, row['radious'], width=2)
+            # pygame.draw.circle(screen, (0, 255, 0), self.right_left_top + answer_pos * self.scale_ratio, 10)
+
+        # current_level_answer = self.answers[self.answers['level'] == level]
+
+        # for idx, row in current_level_answer[["x_pos", "y_pos", "radious"]].iterrows():
+        #     answer_pos = Vector2(row['x_pos'], row['y_pos'])
+        #     pygame.draw.circle(screen, (0, 255, 0), self.left_left_top + answer_pos * self.scale_ratio, row['radious'], width=2)
+        #     pygame.draw.circle(screen, (0, 255, 0), self.right_left_top + answer_pos * self.scale_ratio, row['radious'], width=2)
 
     def flush(self):
         self.found_indices.clear()

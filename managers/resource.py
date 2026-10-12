@@ -82,5 +82,11 @@ class ResourceManager():
         answer_df = pd.read_csv("answers.csv", encoding="utf-8-sig")
         self.get_current_quiz().answers = answer_df[(answer_df['chapter']==self.get_current_chapter())].copy()
 
+    def get_final_answer_count(self) -> int:
+        count = 0
+        for q in self.quiz_list:
+            count += len(q.found_indices)
+        return count
+
 resource_manager = ResourceManager()
                   

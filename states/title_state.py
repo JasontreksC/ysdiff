@@ -4,6 +4,7 @@ from pygame import Surface, Vector2
 from managers.ui import ui_manager, check_quit
 
 from managers.resource import resource_manager
+from managers.rule import rule_manager
 
 game_title = pygame_gui.elements.UILabel(
     relative_rect=pygame.Rect((0, -200),(1000, 150)),
@@ -30,10 +31,10 @@ start_button = pygame_gui.elements.UIButton(
     visible=False,
     anchors={'center':'center'},
     object_id='#start_button'
-
 )
+
 level_button = pygame_gui.elements.UIButton(
-    relative_rect=pygame.Rect((0, 300),(200, 100)),
+    relative_rect=pygame.Rect((0, 300),(500, 120)),
     manager=ui_manager,
     text='',
     visible=False,
@@ -44,7 +45,7 @@ ui_manager.regist_ui('title', game_title, game_subtitle, start_button, level_but
 
 def run_title_state(dt: float, screen: Surface) -> str:
     # 선택된 레벨 가져오기
-    level = ['하 (정답 3개, 개당 1점)', '중 (정답 2개 개당 3점)', '상 (정답 1개, 개당 10점)']
+    level = ['하 (정답 3개, 개당 10점)', '중 (정답 2개 개당 20점)', '상 (정답 1개, 개당 50점)']
     level_button.set_text(f'난이도: {level[resource_manager.get_selected_level()]}')
 
     next_state = 'title'
@@ -64,6 +65,7 @@ def run_title_state(dt: float, screen: Surface) -> str:
                 # 타이틀 화면 -> 인게임 화면 넘어가기
                 next_state = 'ingame'
                 resource_manager.start_chapter()
+                rule_manager.reset()
                 ui_manager.hide_ui_pool('title')
                 ui_manager.show_ui_pool('ingame')
 
